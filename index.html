@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>StrawHats</title>
+
+</head>
+<body>
+  <div class="background">
+    <img src="images/logo1.png" alt="Starwhats" style="margin-left: auto;width: 411px;height: 186px;margin-right: auto;margin-top:200px;">
+    <button class="login-button" id="login-button">Login/SignUp</button>
+  </div>
+
+
+
+  
+</body>
+<script>
+    const login_button=document.getElementById("login-button");
+    login_button.onclick= function(){
+ 
+        window.location.href="https://strawhats.auth.us-east-1.amazoncognito.com/login?client_id=7bg7tgmqu74o8l3gjfkf7u09t8&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A5500%2Fchatbot.html";
+
+    }
+</script>
+</html>

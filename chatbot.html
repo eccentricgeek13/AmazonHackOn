@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>StrawHats</title>
+
+</head>
+<body>
+  <div class="background" id="background">
+<div class="bar">
+<img src="images/logo.png" alt="Starwhats" style="margin-left: 20px;margin-top: 10px;height: 70px;">
+<div class="heading">
+StrawHats
+</div>
+<div class="logout" id="logOut">
+    LogOut
+</div>
+</div>
+<div class="reponse-container">
+<div id="displayData" style="color: white;max-height: 80%;overflow-x: auto;overflow-y: auto;">
+
+</div>
+<div id="loading-overlay" style="display: none; margin-left: auto;margin-right: auto;margin-top: 10px;">
+  <div id="loading-spinner" class="loader"></div>
+  <div id="loading-message" style="color: white; font-size: 15px;text-align: center;align-items: center;justify-content: center;">Loading, please wait...</div>
+</div>
+</div>
+<!-- <div>
+  <img src="" alt="" id="product-image">
+</div>
+<div id="productTable"></div> -->
+<!-- <div>
+  <img  alt="" id="image-product">
+</div> -->
+<form class="form-class" id="input-form" >
+    <div class="custom-file-input">
+        <input type="file" id="file-input" accept="image/*">
+        <label for="file-input">
+          <img src="images/camera_white 1.png" alt="Upload Image" >
+        </label>
+      </div>
+    <input type="text" class="input-type" value="What's on your mind.." id="input-prompt">
+    <input type="submit" value="Submit" id="submit-button">
+</form>
+  </div> 
+  <div class="extra-div">
+
+  </div>
+</body>
+<script>
+let flag=false;
+let imageFile;
+let lowerCasestring;
+const background_div=document.getElementById("background");
+const display_div=document.getElementById("displayData");
+function displayErrorText(){
+error_text_div=document.createElement("div");
+error_text_div.className="response-div";
+error_text_div.textContent="Sorry, there was a problem from our end. Please give the prompt again.";
+display_div.appendChild(error_text_div);
+};
+function displayProductText(){
+error_text_div=document.createElement("div");
+error_text_div.className="response-div";
+error_text_div.textContent="Please search for a product";
+display_div.appendChild(error_text_div);
+};
+let inputValue;
+let contentWithoutQuotes;
+let scrape_response=[];
+let fileInput;
+
+const loadingOverlay = document.getElementById("loading-overlay");
+// var image=document.getElementById("product-image");
+const log_out=document.getElementById("logOut");
+log_out.onclick=function(){
+//   const user = userPool.getCurrentUser();
+// alert(user);
+// if (user) {
+//   user.signOut();
+// }
+  window.location.href="https://strawhats.auth.us-east-1.amazoncognito.com/logout?client_id=7bg7tgmqu74o8l3gjfkf7u09t8&logout_uri=http%3A%2F%2Flocalhost%3A5500%2Findex.html";
+}
+// image.src="https://m.media-amazon.com/images/I/61Iyy+2damL._AC_SX300_SY300_.jpg";
+// image.style="width:100px";
+const inputElement = document.getElementById("input-prompt");
+const inputForm=document.getElementById("input-form");
+function readFileAsync(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const imageDataUrl = event.target.result;
+      resolve(imageDataUrl);
+    };
+
+    reader.onerror = (error) => {
+      reject(error);
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+let isFirstClick = true;
+var display_data=document.getElementById("displayData");
+inputElement.addEventListener("click", function () {
+  if (inputElement.value === inputElement.value) {
+    if (isFirstClick) {
+    // Clear the input value if it's equal to the placeholder text
+    inputElement.value = "";
+    isFirstClick = false;
+    }
+  }
+});
+inputForm.addEventListener("submit",async function(event){
+event.preventDefault(); // Prevent the form from submitting and refreshing the page
+   // Get the uploaded image file
+   fileInput = document.getElementById("file-input");
+    imageFile = fileInput.files[0];
+    console.log(imageFile);
+if(imageFile){
+  flag=true;
+  let imagedetect;
+        if (!imageFile) {
+            display_data.textContent = "Please upload an image.";
+            return;
+        }
+      try {
+      const imageDataUrl = await readFileAsync(imageFile);
+      //console.log("File loaded successfully:", imageDataUrl);
+      imageFile=null;
+      const dataToSend = {
+                image_url: imageDataUrl,  // Include the data URL in the request body
+            };
+
+            // Replace 'https://your-api-url.com' with the actual URL of your API
+            const apiUrl = 'https://za5ye2swsym4c6emfxy3hbexba0wolhr.lambda-url.us-east-1.on.aws/';
+           await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dataToSend),
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json(); // Parse the response data
+                } else {
+                    throw new Error('Failed to receive a valid response from the server.');
+                }
+            })
+            .then(result => {
+                // Handle the response from the server
+                imagedetect=result;
+                contentWithoutQuotes = result.join("").replace(/ /g, "+");
+                result = result.join("").replace(',', "+");
+                console.log(contentWithoutQuotes);
+                var prompt_div=document.createElement("div");
+                prompt_div.className="prompt-div";
+                prompt_div.textContent=result;
+                display_div.appendChild(prompt_div);
+                lowerCasestring=contentWithoutQuotes.toLowerCase();
+                console.log(lowerCasestring);
+              
+                // display_data.textContent = "Request successful!";
+            })
+            .catch(error => {
+                // Handle errors
+                console.error('Error while making the request:', error);
+                displayErrorText();
+                loadingOverlay.style.display = "none";
+            });
+      // Proceed with your code that depends on imageDataUrl here
+      } catch (error) {
+      console.error("Error reading the file:", error);
+      }
+        // // Read the selected image and convert it to a data URL
+        // const reader = new FileReader();
+        // reader.onload = async function(event) {
+        //     const imageDataUrl = event.target.result;
+
+        //     inputValue = inputElement.value;
+        //     inputElement.value = "";
+
+            
+        // };
+        // reader.readAsDataURL(imageFile);
+         loadingOverlay.style.display = "block";
+        
+      }
+// Get the input value and store it in the global variable
+else{
+inputValue = inputElement.value;
+inputElement.value="";
+const apiUrl = 'https://p3meugjzsy5ca7xnikh4ongxgy0binjn.lambda-url.us-east-1.on.aws/';
+const requestBody = {
+ prompt: inputValue
+};
+var prompt_div=document.createElement("div");
+prompt_div.className="prompt-div";
+prompt_div.textContent=inputValue;
+display_div.appendChild(prompt_div);
+loadingOverlay.style.display = "block";
+// Define custom headers
+const headers = {
+  'Content-Type': 'application/json'
+};
+
+// Make the POST request using Axios
+await axios.post(apiUrl, requestBody, { headers: headers })
+  .then(response => {
+    // Handle the response data
+    const content = JSON.stringify(response.data.message.content,null,2);
+    contentWithoutQuotes = content.replace(/"/g, '');
+    contentWithoutQuotes = contentWithoutQuotes.replace(/ /g, '+');
+    lowerCasestring=contentWithoutQuotes.toLowerCase();
+    console.log(contentWithoutQuotes);
+  })
+  .catch(error => {
+    // Handle errors
+    console.error('There was a problem with the request:', error);
+    loadingOverlay.style.display = "none";
+    alert("Alert Occurred,please give the prompt again");
+    displayErrorText();
+   
+  });}
+
+  if(lowerCasestring==="no"||lowerCasestring==="undefined"){
+    displayProductText();
+  }
+  else{
+    console.log("going to apify");
+    console.log(contentWithoutQuotes);
+    
+  const urlsearch=`https://www.amazon.com/s?k=${contentWithoutQuotes}`;
+  const options = {
+  method: 'POST',
+  url: 'https://api.apify.com/v2/acts/junglee~free-amazon-product-scraper/run-sync-get-dataset-items',
+  params: {token: 'apify_api_pFkzIF5lmkWaSkrLnhO8gE9U1PI34I1PCuq3'},
+  headers: {'content-type': 'application/json'},
+  data: {
+    categoryUrls: [{url: urlsearch}],
+    maxItems: 10,
+    detailedInformation: false,
+    useCaptchaSolver: false,
+    proxyConfiguration: {useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL']}
+  }
+};
+
+try {
+  const { data } = await axios.request(options);
+//   scrape_response=data;
+//   const responseJSON = JSON.stringify(scrape_response);
+//   display_data.textContent=responseJSON;
+//   console.log(responseJSON);
+console.log(data);
+scrape_response=data;
+if(!inputValue){
+  inputValue="I want highly rated products";
+}
+let data_to_append={
+  'userprompt':inputValue
+};
+scrape_response.push(data_to_append);
+const options_recommendation = {
+  method: 'POST',
+  url: 'https://8774-103-37-201-178.ngrok-free.app/',
+  headers: {'content-type': 'application/json'},
+  data: JSON.stringify(scrape_response)
+};
+
+try {
+  await axios.request(options_recommendation)
+  .then(response => {
+    loadingOverlay.style.display = "none";
+    console.log('Data received from the server:', response.data);
+    error_text_div=document.createElement("div");
+ error_text_div.className="response-div";
+ const bodyArray = JSON.parse(response.data.body);
+//  display_data.textContent=bodyArray["title"];
+//  alert()
+// console.log(bodyArray[0]);
+ // Iterate through the array to access titles, URLs, and other properties
+ console.log(bodyArray)
+for (let i=0;i<bodyArray.length;i++) {
+  let item=bodyArray[i];
+  const title = item.title;
+  // console.log(title);
+  const url = item.url;
+  const value = item.value;
+  const stars = item.stars;
+  const thumbnailImage = item.thumbnailImage;
+  const reviewsCount = item.reviewsCount;
+  var block_product=document.createElement("a");
+  block_product.href=url;
+  block_product.className="product-card";
+  block_product.target="_blank";
+
+  //add image to block
+  var img_product=document.createElement("img");
+  img_product.className="product-image";
+  img_product.src=thumbnailImage;
+  img_product.alt="Product-Image";
+  //create one more div
+  var div_product=document.createElement("div");
+  div_product.className="product-details";
+  //create h3
+  var product_title=document.createElement("h3");
+  product_title.className="product-title";
+  product_title.textContent=title;
+  div_product.appendChild(product_title);
+  //create value para
+  var value_para=document.createElement("p");
+  value_para.className="product-value";
+  value_para.textContent="Value: $"+ value;
+  div_product.appendChild(value_para);
+  //create rating para
+  var rating_para=document.createElement("p");
+  rating_para.className="product-rating";
+  rating_para.textContent="Rating: "+stars;
+  div_product.appendChild(rating_para);
+  //create reviews count para
+  var review_para=document.createElement("p");
+  review_para.className="product-reviews";
+  review_para.textContent="Reviews: "+reviewsCount;
+  div_product.appendChild(review_para);
+  block_product.appendChild(img_product);
+  block_product.appendChild(div_product);
+  error_text_div.appendChild(block_product);
+}
+// error_text_div.textContent=JSON.stringify(response.data);
+// display_div.appendChild(error_text_div);
+// for(let i=0;i<5;i++){
+//   var block_product=document.createElement("a");
+//   block_product.href=response.da.title[i];
+//   error_text_div.appendChild(block_product);
+// }
+ display_div.appendChild(error_text_div);
+//  var btn_img=document.getElementById("button-image");
+// btn_img.value="";
+  })
+  .catch(error => {
+    console.error('Error while making the request:', error);
+    loadingOverlay.style.display = "none";
+    alert("Alert Occurred,please give the prompt again");
+    displayErrorText();
+  });
+ 
+} catch (error) {
+  console.error(error);
+  loadingOverlay.style.display = "none";
+  alert("Alert Occurred,please give the prompt again");
+  displayErrorText();
+}
+} catch (error) {
+  console.error(error);
+  loadingOverlay.style.display = "none";
+  alert("Alert Occurred,please give the prompt again");
+  displayErrorText();
+}}
+// const recommendation_url="https://da62-103-37-201-178.ngrok-free.app/";
+// const recommendation_options={
+//     method:'POST',
+//     url: recommendation_url,
+//     headers: {'content-type': 'application/json'},
+//     data:
+
+// };
+
+}
+);
+// imageFile=null;
+</script>
+</html>
