@@ -7,9 +7,16 @@ Our solution enhances user shopping experiences and satisfaction by allowing nat
 ## How to Use
 
 **Note:** For real-time data, we use Apify Amazon API, which involves web scraping of public data, making chatbot searches take approximately 2 minutes. Please be patient.
+Steps to be followed:
+1. Open terminal in the directory which contains the Strawhats App (App.py file specifically).
+2.  Run the command "python3 App.py"
+3.  A link will be displayed, please copy it. (Example- Running on **http://127.0.0.1.5000**. Copy the bold part)
+4.  Open a new terminal tab and run the command  "ngrok http (copy above link here)" and press enter. This will make the system as the endpoint for the app.
+5.  Infront of the "Forwarding" session status beneath "Web Interface", there exists a link (Example- **https://fa32-103-37-201-178.ngrok-free.app** -> http://127.0.0.1:5000). Copy the bold text url.
+6.  Now open the chatbot.html and find NGROK_URL. Paste this url there and save.
+7.  Now Open Index.html and login into account. If you want to go to chatbot open the code of chatbot.html and open live server in vscode. Then you can ask by text or give image input
 
 ## Flow of Execution
-
 1. User input is received, calling the `chat_api_dev` Lambda function which uses OpenAI API to parse user requests.
 
 2. Parsed input is passed to the Apify Amazon API, providing results for around 100 products matching the user's query from the current Amazon.com website.
